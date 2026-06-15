@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>VOD Platform</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Inter',sans-serif;background:#F5F6FA;height:100vh;display:flex;flex-direction:column;font-size:13px;color:#1A1D2E;overflow:hidden;}
+
+/* ── TOP NAV ── */
+.topnav{background:#fff;border-bottom:1px solid #E2E6EF;display:flex;align-items:center;height:44px;padding:0 20px;flex-shrink:0;z-index:50;}
+.topnav .nav-tab{padding:0 14px;height:100%;border:none;background:none;cursor:pointer;font-size:13px;color:#6B7280;border-bottom:2px solid transparent;font-family:inherit;white-space:nowrap;}
+.topnav .nav-tab.active{color:#1A6BFF;font-weight:600;border-bottom-color:#1A6BFF;}
+.user{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12px;color:#6B7280;}
+.dot{width:8px;height:8px;border-radius:50%;background:#16A34A;flex-shrink:0;}
+
+/* ── LAYOUT ── */
+.layout{display:flex;flex:1;overflow:hidden;}
+
+/* ── SIDEBAR ── */
+.sidebar{width:160px;background:#fff;border-right:1px solid #E2E6EF;flex-shrink:0;overflow-y:auto;padding:8px 0;}
+.s-head{padding:9px 16px;font-size:13px;font-weight:600;color:#1A1D2E;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none;}
+.s-head:hover{background:#F5F6FA;}
+.s-item{padding:6px 16px 6px 26px;font-size:12px;cursor:pointer;color:#6B7280;border-left:3px solid transparent;transition:background .1s;}
+.s-item.active{color:#1A6BFF;background:#EEF4FF;border-left-color:#1A6BFF;font-weight:500;}
+.s-item:hover:not(.active){background:#F5F6FA;}
+
+/* ── MAIN ── */
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column;}
+.page{display:none;flex:1;flex-direction:column;overflow-y:auto;}
+.page.visible{display:flex;}
+
+/* ── SHARED ── */
+.breadcrumb{display:flex;gap:4px;font-size:12px;color:#9CA3AF;margin-bottom:6px;align-items:center;flex-wrap:wrap;}
+.breadcrumb .cur{color:#1A1D2E;font-weight:500;}
+.breadcrumb .bc-link{color:#1A6BFF;cursor:pointer;text-decoration:underline;}
+.page-title{font-size:18px;font-weight:700;margin-bottom:16px;color:#1A1D2E;}
+.card{background:#fff;border:1px solid #E2E6EF;border-radius:6px;padding:20px;margin-bottom:16px;}
+.section-title{font-size:13px;font-weight:700;color:#1A1D2E;margin-bottom:14px;}
+
+/* ── BUTTONS ── */
+.btn{padding:6px 16px;border-radius:4px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:4px;border:none;transition:opacity .15s;}
+.btn:disabled{opacity:.45;cursor:not-allowed;}
+.btn-primary{background:#1A6BFF;color:#fff;}
+.btn-primary:hover:not(:disabled){background:#1458D6;}
+.btn-default{background:#fff;color:#1A1D2E;border:1px solid #E2E6EF;}
+.btn-default:hover:not(:disabled){background:#F5F6FA;}
+.btn-sm{padding:4px 12px;font-size:12px;}
+.btn-link{background:none;border:none;color:#1A6BFF;cursor:pointer;font-size:13px;font-family:inherit;text-decoration:underline;padding:0;}
+.btn-danger-link{background:none;border:none;color:#E53935;cursor:pointer;font-size:13px;font-family:inherit;text-decoration:underline;padding:0;}
+.add-row-btn{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border:1px dashed #C4C9D4;border-radius:4px;background:none;color:#6B7280;font-size:12px;cursor:pointer;font-family:inherit;}
+.add-row-btn:hover{border-color:#1A6BFF;color:#1A6BFF;}
+
+/* ── BADGE ── */
+.badge{padding:2px 10px;border-radius:3px;font-size:11px;font-weight:600;display:inline-block;}
+.badge-created{background:#DCFCE7;color:#15803D;}
+.badge-withdrawn{background:#FEF9C3;color:#A16207;}
+.badge-new{background:#F3F4F6;color:#6B7280;}
+
+/* ════════════════════════════════════════════
+   LIST PAGE
+════════════════════════════════════════════ */
+#page-list{padding:24px 28px;}
+.filter-bar{background:#fff;border:1px solid #E2E6EF;border-radius:6px;padding:14px 16px;margin-bottom:16px;}
+.row1{display:flex;gap:10px;align-items:center;margin-bottom:12px;}
+.row1 input{flex:1;padding:7px 10px;border:1px solid #E2E6EF;border-radius:4px;font-size:13px;font-family:inherit;outline:none;}
+.row1 input:focus{border-color:#1A6BFF;}
+.filter-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px;}
+.filter-grid label{font-size:11px;color:#9CA3AF;display:block;margin-bottom:4px;}
+.filter-grid select{width:100%;padding:6px 8px;border:1px solid #E2E6EF;border-radius:4px;font-size:13px;background:#fff;font-family:inherit;color:#1A1D2E;cursor:pointer;}
+.table-wrap{background:#fff;border:1px solid #E2E6EF;border-radius:6px;overflow:hidden;}
+table{width:100%;border-collapse:collapse;}
+thead tr{background:#F5F6FA;border-bottom:1px solid #E2E6EF;}
+th{padding:9px 12px;text-align:left;font-size:11px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;}
+td{padding:10px 12px;border-bottom:1px solid #E2E6EF;vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover td{background:#FAFBFD;}
+.thumb{width:40px;height:28px;background:#EEF4FF;border-radius:3px;display:inline-flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.cell-name{display:flex;align-items:center;gap:8px;}
+.cell-name b{font-weight:500;}
+.mono{font-family:monospace;font-size:12px;color:#6B7280;}
+.sub{color:#6B7280;}
+.muted{color:#9CA3AF;font-size:11px;white-space:nowrap;}
+.row-actions{display:flex;gap:14px;}
+.pager{padding:10px 16px;border-top:1px solid #E2E6EF;display:flex;justify-content:space-between;align-items:center;}
+.pager-info{font-size:12px;color:#9CA3AF;}
+.page-btns{display:flex;gap:3px;}
+.pb{width:28px;height:28px;border:1px solid #E2E6EF;border-radius:3px;background:#fff;color:#6B7280;font-size:13px;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;}
+.pb.active{background:#1A6BFF;color:#fff;border-color:#1A6BFF;font-weight:600;}
+.pb:hover:not(.active){background:#F5F6FA;}
+
+/* ── CREATE MODALS ── */
+.overlay{position:fixed;inset:0;background:rgba(26,29,46,.45);z-index:200;display:none;align-items:center;justify-content:center;}
+.overlay.open{display:flex;}
+.modal{background:#fff;border-radius:8px;padding:24px;box-shadow:0 12px 40px rgba(0,0,0,.2);position:relative;max-height:90vh;overflow-y:auto;}
+.modal h3{font-size:14px;font-weight:700;margin-bottom:18px;color:#1A1D2E;}
+.close-x{position:absolute;top:12px;right:14px;background:none;border:none;font-size:20px;cursor:pointer;color:#9CA3AF;line-height:1;}
+.close-x:hover{color:#1A1D2E;}
+.modal-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;}
+.radio-opt{display:flex;align-items:center;gap:10px;padding:11px 14px;border:1px solid #E2E6EF;border-radius:6px;cursor:pointer;margin-bottom:10px;transition:border-color .12s,background .12s;user-select:none;}
+.radio-opt.on{border-color:#1A6BFF;background:#EEF4FF;}
+.radio-opt input{accent-color:#1A6BFF;pointer-events:none;}
+.modal-input{width:100%;padding:8px 10px;border:1px solid #E2E6EF;border-radius:4px;font-size:13px;font-family:inherit;outline:none;margin-bottom:4px;}
+.modal-input:focus{border-color:#1A6BFF;}
+.inner-wrap{border:1px solid #E2E6EF;border-radius:6px;overflow:hidden;margin-bottom:4px;}
+.inner-wrap table thead tr{background:#F5F6FA;}
+.inner-wrap tbody tr{cursor:pointer;}
+.inner-wrap tbody tr.sel{background:#EEF4FF;}
+.inner-wrap td{padding:8px 12px;border-bottom:1px solid #E2E6EF;}
+.inner-wrap tbody tr:last-child td{border-bottom:none;}
+.inner-pager{padding:8px 12px;border-top:1px solid #E2E6EF;display:flex;justify-content:space-between;align-items:center;}
+
+/* ════════════════════════════════════════════
+   FORM PAGE (Create / Edit / View)
+════════════════════════════════════════════ */
+#page-form{padding:20px 28px 40px;}
+.billing-row{display:flex;gap:16px;align-items:center;font-size:12px;color:#6B7280;margin-bottom:10px;flex-wrap:wrap;background:#fff;border:1px solid #E2E6EF;border-radius:6px;padding:10px 16px;}
+.billing-row b{color:#1A1D2E;font-weight:500;}
+.billing-row a{color:#1A6BFF;text-decoration:none;font-size:12px;}
+.form-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.form-header-actions{display:flex;gap:8px;}
+
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid #E2E6EF;background:#fff;border-radius:6px 6px 0 0;padding:0 4px;margin-bottom:0;overflow-x:auto;}
+.tab{padding:10px 18px;border:none;background:none;cursor:pointer;font-size:13px;color:#6B7280;border-bottom:2px solid transparent;margin-bottom:-1px;font-family:inherit;white-space:nowrap;}
+.tab.active{color:#1A6BFF;font-weight:600;border-bottom-color:#1A6BFF;}
+.tab-panel{display:none;padding-top:16px;}
+.tab-panel.active{display:block;}
+
+/* FORM ELEMENTS */
+.form-row{display:grid;gap:12px;margin-bottom:14px;}
+.form-row.c2{grid-template-columns:1fr 1fr;}
+.form-row.c3{grid-template-columns:1fr 1fr 1fr;}
+.form-row.c4{grid-template-columns:1fr 1fr 1fr 1fr;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group label{font-size:11px;color:#6B7280;font-weight:500;}
+.form-group label.req::after{content:" *";color:#E53935;}
+.inp{padding:7px 10px;border:1px solid #E2E6EF;border-radius:4px;font-size:13px;font-family:inherit;outline:none;width:100%;background:#fff;color:#1A1D2E;}
+.inp:focus{border-color:#1A6BFF;}
+.inp.err{border-color:#E53935;background:#FFF5F5;}
+.inp::placeholder{color:#C4C9D4;}
+textarea.inp{resize:vertical;min-height:72px;}
+select.inp{cursor:pointer;}
+.err-msg{font-size:11px;color:#E53935;margin-top:2px;}
+.radio-group{display:flex;gap:14px;align-items:center;padding:7px 0;}
+.radio-group label{display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;color:#1A1D2E;}
+.radio-group input[type=radio]{accent-color:#1A6BFF;}
+.tag-wrap{display:flex;flex-wrap:wrap;gap:6px;padding:6px 8px;border:1px solid #E2E6EF;border-radius:4px;min-height:36px;background:#fff;}
+.tag-wrap.err{border-color:#E53935;background:#FFF5F5;}
+.chip{background:#EEF4FF;color:#1A6BFF;border:1px solid #C7D9FF;border-radius:3px;padding:2px 8px;font-size:12px;display:inline-flex;align-items:center;gap:4px;}
+.chip .rm{cursor:pointer;color:#9CA3AF;font-weight:700;line-height:1;}
+.add-lang-btn{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border:1px dashed #1A6BFF;border-radius:4px;background:#EEF4FF;color:#1A6BFF;font-size:12px;cursor:pointer;margin-bottom:14px;}
+
+/* WORKOUT TYPE */
+.wt-table{width:100%;border-collapse:collapse;margin-bottom:8px;}
+.wt-table th{padding:7px 10px;font-size:11px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:.04em;text-align:left;border-bottom:1px solid #E2E6EF;}
+.wt-table td{padding:7px 10px;border-bottom:1px solid #F0F2F7;vertical-align:middle;}
+.inp-sm{padding:5px 8px;border:1px solid #E2E6EF;border-radius:4px;font-size:12px;font-family:inherit;outline:none;width:100%;}
+.inp-sm.err{border-color:#E53935;background:#FFF5F5;}
+.inp-sm:focus{border-color:#1A6BFF;}
+
+/* MEDIA */
+.media-label{font-size:12px;font-weight:600;color:#6B7280;margin-bottom:8px;margin-top:4px;}
+.upload-grid{display:grid;gap:16px;margin-bottom:20px;}
+.upload-grid.c2{grid-template-columns:1fr 1fr;}
+.upload-card{border:1px solid #E2E6EF;border-radius:6px;overflow:hidden;}
+.upload-card.err-card{border-color:#E53935;}
+.upload-preview{height:110px;background:#EEF4FF;display:flex;align-items:center;justify-content:center;}
+.upload-ph{text-align:center;padding:14px;}
+.upload-ph .ico{font-size:26px;margin-bottom:6px;color:#9CA3AF;}
+.upload-ph p{font-size:11px;color:#6B7280;line-height:1.5;}
+.upload-ph .hint{font-size:10px;color:#9CA3AF;margin-top:3px;}
+.upload-ph.err-ph .ico{color:#E53935;}
+.upload-ph.err-ph p{color:#E53935;}
+.upload-lbl{font-size:11px;color:#6B7280;padding:6px 10px;border-top:1px solid #E2E6EF;background:#FAFBFD;}
+.upload-actions{display:flex;gap:6px;padding:8px 10px;border-top:1px solid #E2E6EF;}
+.upload-err{font-size:11px;color:#E53935;padding:4px 10px 6px;}
+
+/* SECTION TABLE */
+.sec-table{width:100%;border-collapse:collapse;}
+.sec-table th{padding:8px 10px;font-size:11px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:.04em;text-align:left;border-bottom:1px solid #E2E6EF;}
+.sec-table td{padding:9px 10px;border-bottom:1px solid #F0F2F7;font-size:12px;vertical-align:middle;}
+.toggle{display:inline-flex;width:34px;height:19px;border-radius:10px;background:#E2E6EF;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0;}
+.toggle.on{background:#1A6BFF;}
+.toggle::after{content:'';width:15px;height:15px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:left .2s;}
+.toggle.on::after{left:17px;}
+
+/* BOTTOM BAR */
+.bottom-bar{display:flex;justify-content:space-between;align-items:center;padding:16px 0 0;margin-top:4px;}
+.bottom-bar .right{display:flex;gap:8px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);color:#fff;padding:12px 20px;border-radius:6px;font-size:13px;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.2);pointer-events:none;white-space:nowrap;}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<div class="topnav">
+  <button class="nav-tab active" onclick="setNavTab(this)">Workout</button>
+  <button class="nav-tab" onclick="setNavTab(this)">Subscription</button>
+  <button class="nav-tab" onclick="setNavTab(this)">App Setting</button>
+  <button class="nav-tab" onclick="setNavTab(this)">Membership</button>
+  <button class="nav-tab" onclick="setNavTab(this)">Backend Design</button>
+  <div class="user"><div class="dot"></div>Jack Kim</div>
+</div>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="s-head" onclick="toggleSec('vod')">VOD <span id="arr-vod" style="font-size:10px;color:#9CA3AF">▾</span></div>
+    <div id="sec-vod">
+      <div class="s-item" id="si-create" onclick="openCreateModal()">• Create New VOD</div>
+      <div class="s-item active" id="si-list" onclick="goList()">• VOD List</div>
+    </div>
+    <div class="s-head" onclick="toggleSec('live')">Live <span id="arr-live" style="font-size:10px;color:#9CA3AF">▸</span></div>
+    <div id="sec-live" style="display:none"></div>
+    <div class="s-head" onclick="toggleSec('prog')">Program <span id="arr-prog" style="font-size:10px;color:#9CA3AF">▸</span></div>
+    <div id="sec-prog" style="display:none"></div>
+    <div class="s-head" onclick="toggleSec('inst')">Instructor <span id="arr-inst" style="font-size:10px;color:#9CA3AF">▸</span></div>
+    <div id="sec-inst" style="display:none"></div>
+    <div class="s-head" onclick="toggleSec('hub')">Media Hub <span id="arr-hub" style="font-size:10px;color:#9CA3AF">▸</span></div>
+    <div id="sec-hub" style="display:none"></div>
+  </div>
+
+  <!-- MAIN CONTENT AREA -->
+  <div class="main">
+
+    <!-- ══════════════ LIST PAGE ══════════════ -->
+    <div class="page visible" id="page-list">
+      <div class="breadcrumb">
+        <span>Module</span><span>/</span><span>VOD</span><span>/</span><span class="cur">VOD List</span>
+      </div>
+      <div class="page-title">VOD List</div>
+
+      <div class="filter-bar">
+        <div class="row1">
+          <input type="text" id="kw" placeholder="Search keyword..." oninput="applyFilters()">
+          <button class="btn btn-primary" onclick="openCreateModal()">Create</button>
+        </div>
+        <div class="filter-grid">
+          <div><label>Member Type</label>
+            <select id="f-member" onchange="applyFilters()">
+              <option value="">—</option><option>Basic</option><option>Premium</option><option>VIP</option>
+            </select></div>
+          <div><label>Instructor</label>
+            <select id="f-inst" onchange="applyFilters()">
+              <option value="">—</option><option>Jung Jim</option><option>Alice Chen</option><option>Bob Park</option>
+            </select></div>
+          <div><label>Region</label>
+            <select id="f-reg" onchange="applyFilters()">
+              <option value="">—</option><option>Global</option><option>Asia</option><option>Europe</option>
+            </select></div>
+          <div><label>Status</label>
+            <select id="f-sta" onchange="applyFilters()">
+              <option value="">—</option><option>Created</option><option>Withdrawn</option>
+            </select></div>
+        </div>
+        <button class="btn btn-primary" onclick="applyFilters()">Search</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Class ID</th><th>Class Name</th><th>Region</th><th>Instructor</th><th>Status</th><th>Update Time</th><th>Action</th>
+          </tr></thead>
+          <tbody id="list-tbody"></tbody>
+        </table>
+        <div class="pager">
+          <div class="pager-info" id="pager-info"></div>
+          <div class="page-btns" id="page-btns"></div>
+        </div>
+      </div>
+    </div><!-- /page-list -->
+
+    <!-- ══════════════ FORM PAGE ══════════════ -->
+    <div class="page" id="page-form">
+      <!-- Billing row (view/edit mode only) -->
+      <div class="billing-row" id="billing-row" style="display:none; margin-bottom:12px;">
+        <span>Billing History: <b>Created</b></span>
+        <span>Status: <b id="b-status">New</b></span>
+        <span>Name: <b id="b-name">—</b></span>
+        <span>ID: <b id="b-id">—</b></span>
+        <a href="#">Preview</a>
+        <span class="badge badge-created" id="b-badge">Created</span>
+      </div>
+
+      <div class="form-header">
+        <div>
+          <div class="breadcrumb" id="form-breadcrumb">
+            <span class="bc-link" onclick="goList()">Module</span><span>/</span>
+            <span class="bc-link" onclick="goList()">VOD</span><span>/</span>
+            <span class="cur" id="form-bc-cur">Create New VOD</span>
+          </div>
+          <div class="page-title" id="form-title">Create New VOD</div>
+        </div>
+        <div class="form-header-actions">
+          <button class="btn btn-default" onclick="goList()">Cancel</button>
+          <button class="btn btn-default" onclick="showToast('Draft saved.','#1A6BFF')">Save</button>
+          <button class="btn btn-primary" onclick="showToast('VOD published!','#16A34A')">Publish</button>
+        </div>
+      </div>
+
+      <!-- TABS -->
+      <div class="tabs" id="form-tabs">
+        <button class="tab active" onclick="switchTab(0)">Class Status</button>
+        <button class="tab" onclick="switchTab(1)">Class Information</button>
+        <button class="tab" onclick="switchTab(2)">Class Media</button>
+        <button class="tab" onclick="switchTab(3)">Class Section &amp; Action Arrangement</button>
+      </div>
+
+      <!-- TAB 0: CLASS STATUS -->
+      <div class="tab-panel active" id="tp-0">
+        <div class="card">
+          <div class="section-title">Class Status</div>
+          <div class="form-row c2">
+            <div class="form-group">
+              <label>Status</label>
+              <select class="inp" id="fs-status">
+                <option>New</option><option selected>Created</option><option>Published</option><option>Withdrawn</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Billing History</label>
+              <input class="inp" value="Created" readonly style="background:#F5F6FA">
+            </div>
+          </div>
+          <div class="form-row c3">
+            <div class="form-group">
+              <label>VOD Name</label>
+              <input class="inp" id="fs-vodname" placeholder="VOD name">
+            </div>
+            <div class="form-group">
+              <label>VOD ID</label>
+              <input class="inp" value="001-UN-2" readonly style="background:#F5F6FA">
+            </div>
+            <div class="form-group" style="justify-content:flex-end;">
+              <label>&nbsp;</label>
+              <button class="btn btn-default btn-sm" style="width:fit-content">▶ Preview</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 1: CLASS INFORMATION -->
+      <div class="tab-panel" id="tp-1">
+        <div class="card">
+          <div class="section-title">Class Information</div>
+
+          <button class="add-lang-btn" onclick="addLang()">＋ Add Language</button>
+          <div id="lang-tabs" style="display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
+            <span style="background:#1A6BFF;color:#fff;padding:3px 12px;border-radius:3px;font-size:12px;cursor:pointer">English</span>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="req">Language</label>
+              <select class="inp" id="fi-lang">
+                <option>English</option><option>繁體中文</option><option>日本語</option>
+              </select>
+              <span class="err-msg" id="ei-lang" style="display:none">You must select one item.</span>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="req">Class Name</label>
+              <input class="inp" id="fi-name" placeholder="Class name (max. 100 characters)">
+              <span class="err-msg" id="ei-name" style="display:none">You must input class name. (Maximum 100 characters)</span>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="req">Description</label>
+              <textarea class="inp" id="fi-desc" placeholder="Class description (max. 500 characters)"></textarea>
+              <span class="err-msg" id="ei-desc" style="display:none">You must input description. (Maximum 500 characters)</span>
+            </div>
+          </div>
+          <div class="form-row c2">
+            <div class="form-group">
+              <label class="req">Instructor</label>
+              <select class="inp" id="fi-inst">
+                <option value="">Select instructor...</option>
+                <option>Jung Jim</option><option>Alice Chen</option><option>Bob Park</option>
+              </select>
+              <span class="err-msg" id="ei-inst" style="display:none">You must select one item.</span>
+            </div>
+            <div class="form-group">
+              <label class="req">Region</label>
+              <div class="radio-group">
+                <label><input type="radio" name="fi-region" value="global"> Global</label>
+                <label><input type="radio" name="fi-region" value="local"> Local</label>
+                <label><input type="radio" name="fi-region" value="others"> Others</label>
+              </div>
+              <span class="err-msg" id="ei-reg" style="display:none">You must select one item.</span>
+            </div>
+          </div>
+
+          <!-- Workout Type -->
+          <div style="margin-bottom:14px;">
+            <label style="font-size:11px;color:#6B7280;font-weight:500;display:block;margin-bottom:6px;">Workout Type <span style="color:#E53935">*</span></label>
+            <table class="wt-table">
+              <thead><tr>
+                <th style="width:28%">Type</th><th style="width:22%">Sub-type</th>
+                <th style="width:16%">Yes / No</th><th>Custom Field</th><th style="width:30px"></th>
+              </tr></thead>
+              <tbody id="wt-tbody">
+                <tr>
+                  <td><input class="inp-sm" placeholder="e.g. Yoga"></td>
+                  <td><input class="inp-sm" placeholder="Sub-type"></td>
+                  <td><div style="display:flex;gap:8px;">
+                    <label style="font-size:12px;display:flex;align-items:center;gap:3px;"><input type="radio" name="wt0" value="yes" style="accent-color:#1A6BFF"> Yes</label>
+                    <label style="font-size:12px;display:flex;align-items:center;gap:3px;"><input type="radio" name="wt0" value="no" style="accent-color:#1A6BFF"> No</label>
+                  </div></td>
+                  <td><input class="inp-sm" placeholder="Custom field"></td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+            <span class="err-msg" id="ei-wt" style="display:none">You must add at least one workout type.</span>
+            <button class="add-row-btn" onclick="addWTRow()" style="margin-top:6px">＋ Add</button>
+          </div>
+
+          <div class="form-row c4">
+            <div class="form-group">
+              <label class="req">Tutor</label>
+              <select class="inp" id="fi-tutor">
+                <option value="">Select...</option><option>1:1 Ratio</option><option>Group</option>
+              </select>
+              <span class="err-msg" id="ei-tutor" style="display:none">You must select one.</span>
+            </div>
+            <div class="form-group">
+              <label class="req">VD Option</label>
+              <div class="radio-group">
+                <label><input type="radio" name="fi-vd" value="enable" style="accent-color:#1A6BFF"> Enable</label>
+                <label><input type="radio" name="fi-vd" value="disable" style="accent-color:#1A6BFF"> Disable</label>
+              </div>
+              <span class="err-msg" id="ei-vd" style="display:none">You must select one.</span>
+            </div>
+            <div class="form-group">
+              <label>Calories</label>
+              <input class="inp" id="fi-cal" placeholder="e.g. 200">
+            </div>
+            <div class="form-group">
+              <label>Cabin No.</label>
+              <input class="inp" id="fi-cabin" placeholder="e.g. A01">
+            </div>
+          </div>
+
+          <div class="form-row c2">
+            <div class="form-group">
+              <label class="req">Duration</label>
+              <input class="inp" id="fi-dur" placeholder="e.g. 45 (min)">
+              <span class="err-msg" id="ei-dur" style="display:none">You must enter duration. (max. 3 characters only)</span>
+            </div>
+            <div class="form-group">
+              <label>Body Part</label>
+              <div class="tag-wrap" id="fi-body">
+                <span class="chip">Upper Body <span class="rm" onclick="rmChip(this)">×</span></span>
+                <span class="chip">Core <span class="rm" onclick="rmChip(this)">×</span></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row c2">
+            <div class="form-group">
+              <label class="req">Equipment</label>
+              <div class="tag-wrap" id="fi-equip">
+                <span class="chip">Mat <span class="rm" onclick="rmChip(this)">×</span></span>
+                <span class="chip">Block <span class="rm" onclick="rmChip(this)">×</span></span>
+                <span class="chip">Strap <span class="rm" onclick="rmChip(this)">×</span></span>
+              </div>
+              <span class="err-msg" id="ei-equip" style="display:none">You must select one item.</span>
+            </div>
+            <div class="form-group">
+              <label>Study Part</label>
+              <div class="tag-wrap">
+                <span class="chip">Flexibility <span class="rm" onclick="rmChip(this)">×</span></span>
+                <span class="chip">Balance <span class="rm" onclick="rmChip(this)">×</span></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row c2">
+            <div class="form-group">
+              <label class="req">Subscription Type</label>
+              <div class="radio-group">
+                <label><input type="radio" name="fi-sub" value="free" style="accent-color:#1A6BFF"> Free</label>
+                <label><input type="radio" name="fi-sub" value="paid" style="accent-color:#1A6BFF"> Paid</label>
+              </div>
+              <span class="err-msg" id="ei-sub" style="display:none">You need to select one.</span>
+            </div>
+            <div class="form-group">
+              <label>License Expired Date</label>
+              <input class="inp" type="date" id="fi-expire">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Tag</label>
+            <div class="tag-wrap" id="fi-tags" onclick="document.getElementById('tag-inp').focus()">
+              <span class="chip">Yoga <span class="rm" onclick="rmChip(this)">×</span></span>
+              <span class="chip">Beginner <span class="rm" onclick="rmChip(this)">×</span></span>
+              <input id="tag-inp" style="border:none;outline:none;font-size:12px;min-width:80px;font-family:inherit;padding:2px 4px;" placeholder="Add tag…" onkeydown="addChip(event)">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: CLASS MEDIA -->
+      <div class="tab-panel" id="tp-2">
+        <div class="card">
+          <div class="section-title">Class Media</div>
+
+          <div class="media-label">Image</div>
+          <div class="upload-grid c2">
+            <div class="upload-card" id="uc-img1">
+              <div class="upload-preview" id="up-img1">
+                <div class="upload-ph" id="uph-img1">
+                  <div class="ico">🖼️</div>
+                  <p>Please select an image from Media Hub or upload from your device.</p>
+                  <p class="hint">PNG or JPG only. Max 5MB.</p>
+                </div>
+              </div>
+              <div class="upload-lbl">Ratio 1:1</div>
+              <div class="upload-actions">
+                <button class="btn btn-default btn-sm" onclick="doUpload('img1')">Media Hub</button>
+                <button class="btn btn-primary btn-sm" onclick="doUpload('img1')">Device</button>
+              </div>
+              <div class="upload-err" id="ue-img1" style="display:none">You must upload an image. PNG or JPG only, max 5MB.</div>
+            </div>
+            <div class="upload-card" id="uc-img2">
+              <div class="upload-preview" id="up-img2">
+                <div class="upload-ph" id="uph-img2">
+                  <div class="ico">🖼️</div>
+                  <p>Please select an image from Media Hub or upload from your device.</p>
+                  <p class="hint">PNG or JPG only. Max 5MB.</p>
+                </div>
+              </div>
+              <div class="upload-lbl">Ratio 16:9</div>
+              <div class="upload-actions">
+                <button class="btn btn-default btn-sm" onclick="doUpload('img2')">Media Hub</button>
+                <button class="btn btn-primary btn-sm" onclick="doUpload('img2')">Device</button>
+              </div>
+              <div class="upload-err" id="ue-img2" style="display:none">You must upload an image. PNG or JPG only, max 5MB.</div>
+            </div>
+          </div>
+
+          <div class="media-label">Video</div>
+          <div class="upload-grid" style="grid-template-columns:1fr 1fr;margin-bottom:20px;">
+            <div class="upload-card" id="uc-vid">
+              <div class="upload-preview" id="up-vid">
+                <div class="upload-ph" id="uph-vid">
+                  <div class="ico">🎬</div>
+                  <p>Please select a video from Media Hub or upload from your device.</p>
+                  <p class="hint">MP4 or MOV only. Max 5GB.</p>
+                </div>
+              </div>
+              <div class="upload-lbl">Preview</div>
+              <div class="upload-actions">
+                <button class="btn btn-default btn-sm" onclick="doUpload('vid')">Media Hub</button>
+                <button class="btn btn-primary btn-sm" onclick="doUpload('vid')">Device</button>
+              </div>
+              <div class="upload-err" id="ue-vid" style="display:none">You must upload a video file. Max 5GB.</div>
+            </div>
+            <div></div>
+          </div>
+
+          <div class="media-label">Background Music</div>
+          <div style="display:flex;gap:12px;align-items:flex-start;">
+            <div style="width:80px;height:80px;background:#EEF4FF;border:1px solid #E2E6EF;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;" id="music-ico">🎵</div>
+            <div class="upload-card" id="uc-music" style="flex:1;max-width:360px;">
+              <div class="upload-preview" id="up-music" style="height:80px;">
+                <div class="upload-ph" id="uph-music">
+                  <div class="ico" style="font-size:20px">🎵</div>
+                  <p>Please select an audio file from your desired source.</p>
+                  <p class="hint">Max 1GB.</p>
+                </div>
+              </div>
+              <div class="upload-actions" style="flex-direction:column;gap:8px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <label style="font-size:12px;color:#6B7280;white-space:nowrap;flex-shrink:0;">File Source</label>
+                  <input class="inp" placeholder="Enter URL or file path" style="font-size:12px;">
+                </div>
+              </div>
+              <div class="upload-err" id="ue-music" style="display:none">You must upload an audio file. Max 1GB.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: SECTIONS -->
+      <div class="tab-panel" id="tp-3">
+        <div class="card">
+          <div class="section-title">Class Section &amp; Action Arrangement</div>
+          <div style="overflow-x:auto;">
+            <table class="sec-table">
+              <thead><tr>
+                <th style="width:50px">No.</th><th>Section Name</th>
+                <th>Start Time</th><th>End Time</th><th>Duration</th><th>Active Setting</th>
+              </tr></thead>
+              <tbody id="sec-tbody">
+                <tr>
+                  <td>No.1</td>
+                  <td><input class="inp" style="font-size:12px" value="Warm up"></td>
+                  <td><input class="inp" style="font-size:12px" value="00:00:00"></td>
+                  <td><input class="inp" style="font-size:12px" value="00:05:00"></td>
+                  <td style="color:#6B7280">5 min</td>
+                  <td><div style="display:flex;align-items:center;gap:10px;">
+                    <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+                    <button class="btn-link" style="font-size:12px">Edit</button>
+                    <button class="btn-danger-link" style="font-size:12px" onclick="delSection(this)">Delete</button>
+                  </div></td>
+                </tr>
+                <tr>
+                  <td>No.2</td>
+                  <td><input class="inp" style="font-size:12px" value="Main Session"></td>
+                  <td><input class="inp" style="font-size:12px" value="00:05:00"></td>
+                  <td><input class="inp" style="font-size:12px" value="00:35:00"></td>
+                  <td style="color:#6B7280">30 min</td>
+                  <td><div style="display:flex;align-items:center;gap:10px;">
+                    <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+                    <button class="btn-link" style="font-size:12px">Edit</button>
+                    <button class="btn-danger-link" style="font-size:12px" onclick="delSection(this)">Delete</button>
+                  </div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <span class="err-msg" id="ei-sec" style="display:none;margin-top:6px;">You must add at least one section.</span>
+          <button class="add-row-btn" style="margin-top:10px" onclick="addSection()">＋ Add</button>
+
+          <div class="bottom-bar">
+            <button class="btn btn-primary" onclick="showToast('VOD published!','#16A34A')">Publish</button>
+            <div class="right">
+              <button class="btn btn-default" onclick="showToast('Draft saved.','#1A6BFF')">Save</button>
+              <button class="btn btn-default" onclick="goList()">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Global bottom bar (tabs 0-2) -->
+      <div class="bottom-bar" id="global-bottom">
+        <button class="btn btn-primary" onclick="showToast('VOD published!','#16A34A')">Publish</button>
+        <div class="right">
+          <button class="btn btn-default" onclick="showToast('Draft saved.','#1A6BFF')">Save</button>
+          <button class="btn btn-default" onclick="goList()">Cancel</button>
+        </div>
+      </div>
+
+    </div><!-- /page-form -->
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<!-- ═══════════════════ MODALS ═══════════════════ -->
+<!-- Choose method -->
+<div class="overlay" id="m-choose">
+  <div class="modal" style="width:400px">
+    <h3>Choose a method to create your class</h3>
+    <button class="close-x" onclick="closeModals()">×</button>
+    <div class="radio-opt" id="opt-new" onclick="pickMethod('new')">
+      <input type="radio" name="meth" id="r-new"><label for="r-new" style="cursor:pointer;font-size:13px">Create a New VOD</label>
+    </div>
+    <div class="radio-opt" id="opt-copy" onclick="pickMethod('copy')">
+      <input type="radio" name="meth" id="r-copy"><label for="r-copy" style="cursor:pointer;font-size:13px">Copy From a Class</label>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-default" onclick="closeModals()">Cancel</button>
+      <button class="btn btn-primary" id="btn-choose-ok" onclick="goMethod()" disabled>Select</button>
+    </div>
+  </div>
+</div>
+
+<!-- Create New -->
+<div class="overlay" id="m-new">
+  <div class="modal" style="width:400px">
+    <h3>Choose a method to create your class</h3>
+    <button class="close-x" onclick="showModal('choose')">×</button>
+    <input class="modal-input" type="text" id="new-name" placeholder="Create a New Vod..."
+      oninput="document.getElementById('btn-new-ok').disabled=!this.value.trim()">
+    <div class="modal-foot">
+      <button class="btn btn-default" onclick="showModal('choose')">Cancel</button>
+      <button class="btn btn-primary" id="btn-new-ok" onclick="confirmNew()" disabled>Select</button>
+    </div>
+  </div>
+</div>
+
+<!-- Copy From Class -->
+<div class="overlay" id="m-copy">
+  <div class="modal" style="width:520px">
+    <h3>Choose a method to create your class</h3>
+    <button class="close-x" onclick="showModal('choose')">×</button>
+    <input class="modal-input" type="text" id="copy-q" placeholder="Copy From a Class..." oninput="copyPage=1;renderCopy()">
+    <div class="inner-wrap">
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr style="background:#F5F6FA">
+          <th style="width:36px;padding:8px 12px"></th>
+          <th style="padding:8px 12px;font-size:11px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:.05em">Class ID</th>
+          <th style="padding:8px 12px;font-size:11px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:.05em">Class Name</th>
+        </tr></thead>
+        <tbody id="copy-tbody"></tbody>
+      </table>
+      <div class="inner-pager">
+        <span class="pager-info" id="copy-info"></span>
+        <div class="page-btns" id="copy-btns"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-default" onclick="showModal('choose')">Cancel</button>
+      <button class="btn btn-primary" id="btn-copy-ok" onclick="confirmCopy()" disabled>Select</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════ DATA ══════════ */
+const VODS = [
+  {id:'00001',name:'Prayer Yoga F6', region:'Global',instructor:'Jung Jim',  status:'Created',  updatedAt:'2027-01-01 12:00:00'},
+  {id:'00002',name:'Prayer Yoga G7', region:'Global',instructor:'Jung Jim',  status:'Created',  updatedAt:'2027-02-02 12:00:00'},
+  {id:'00003',name:'Prayer Yoga H8', region:'Global',instructor:'Jung Jim',  status:'Created',  updatedAt:'2027-03-03 12:00:00'},
+  {id:'00004',name:'Prayer Yoga I9', region:'Global',instructor:'Jung Jim',  status:'Withdrawn',updatedAt:'2027-04-04 12:00:00'},
+  {id:'00005',name:'Prayer Yoga J10',region:'Global',instructor:'Alice Chen',status:'Created',  updatedAt:'2027-05-05 12:00:00'},
+  {id:'00006',name:'Prayer Yoga K11',region:'Global',instructor:'Alice Chen',status:'Created',  updatedAt:'2027-06-06 12:00:00'},
+  {id:'00007',name:'Prayer Yoga L12',region:'Global',instructor:'Bob Park',  status:'Created',  updatedAt:'2027-07-07 12:00:00'},
+  {id:'00008',name:'Prayer Yoga M13',region:'Asia',  instructor:'Bob Park',  status:'Created',  updatedAt:'2027-08-08 12:00:00'},
+  {id:'00009',name:'Prayer Yoga N14',region:'Asia',  instructor:'Jung Jim',  status:'Withdrawn',updatedAt:'2027-09-01 12:00:00'},
+  {id:'00010',name:'Prayer Yoga O15',region:'Europe',instructor:'Jung Jim',  status:'Created',  updatedAt:'2027-01-08 12:00:00'},
+];
+const COPIES = [
+  {id:'00001',name:'Prayer Yoga A1'},{id:'00002',name:'Prayer Yoga B2'},
+  {id:'00003',name:'Prayer Yoga C3'},{id:'00004',name:'Prayer Yoga D4'},
+  {id:'00005',name:'Prayer Yoga E5'},{id:'00006',name:'Prayer Yoga F6'},
+  {id:'00007',name:'Prayer Yoga G7'},
+];
+
+/* ══════════ STATE ══════════ */
+let filtered=[...VODS], curPage=1, RPER=10;
+let selMethod='', selCopyId=null, copyPage=1, CPER=5;
+let wtRowCount=1, secRowCount=2;
+const secOpen={vod:true,live:false,prog:false,inst:false,hub:false};
+
+/* ══════════ NAV ══════════ */
+function setNavTab(el){
+  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function toggleSec(k){
+  secOpen[k]=!secOpen[k];
+  document.getElementById('sec-'+k).style.display=secOpen[k]?'':'none';
+  document.getElementById('arr-'+k).textContent=secOpen[k]?'▾':'▸';
+}
+
+function setSidebarActive(mode){
+  document.getElementById('si-list').classList.toggle('active', mode==='list');
+  document.getElementById('si-create').classList.toggle('active', mode==='form');
+}
+
+function goList(){
+  document.getElementById('page-list').classList.add('visible');
+  document.getElementById('page-form').classList.remove('visible');
+  setSidebarActive('list');
+}
+
+function goForm(vod){
+  const isNew = !vod;
+  document.getElementById('page-list').classList.remove('visible');
+  document.getElementById('page-form').classList.add('visible');
+  setSidebarActive('form');
+  switchTab(0);
+
+  // Set page title & breadcrumb
+  const title = isNew ? 'Create New VOD' : vod.name;
+  document.getElementById('form-title').textContent = title;
+  document.getElementById('form-bc-cur').textContent = isNew ? 'Create New VOD' : 'Edit VOD';
+
+  // Billing row
+  if (vod) {
+    document.getElementById('billing-row').style.display='flex';
+    document.getElementById('b-name').textContent = vod.name;
+    document.getElementById('b-id').textContent = vod.id;
+    document.getElementById('b-status').textContent = vod.status;
+    document.getElementById('b-badge').textContent = vod.status;
+    document.getElementById('b-badge').className = 'badge badge-' + vod.status.toLowerCase();
+    // Pre-fill some fields
+    document.getElementById('fi-name').value = vod.name;
+    document.getElementById('fs-vodname').value = vod.name;
+    document.querySelector('input[name=fi-region][value=global]').checked = true;
+    document.querySelector('input[name=fi-vd][value=enable]').checked = true;
+    document.querySelector('input[name=fi-sub][value=paid]').checked = true;
+    document.getElementById('fi-inst').value = vod.instructor;
+    document.getElementById('fi-cal').value = '200';
+    document.getElementById('fi-dur').value = '45';
+    document.getElementById('fi-cabin').value = 'A-001';
+    document.getElementById('fi-expire').value = '2024-12-15';
+    document.getElementById('fi-desc').value = 'Prayer Yoga, for example, is designed specifically to improve muscular strength and to enhance your entire body.';
+    doUpload('img1'); doUpload('img2'); doUpload('vid');
+  } else {
+    document.getElementById('billing-row').style.display='none';
+    // Clear fields
+    ['fi-name','fi-desc','fi-cal','fi-cabin','fi-dur','fs-vodname'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.value='';
+    });
+    document.getElementById('fi-inst').value='';
+    document.querySelectorAll('input[name=fi-region],input[name=fi-vd],input[name=fi-sub]').forEach(r=>r.checked=false);
+    document.getElementById('fi-expire').value='';
+    resetUpload('img1'); resetUpload('img2'); resetUpload('vid');
+    clearErrors();
+  }
+}
+
+/* ══════════ LIST ══════════ */
+function applyFilters(){
+  const kw=document.getElementById('kw').value.toLowerCase();
+  const ins=document.getElementById('f-inst').value;
+  const reg=document.getElementById('f-reg').value;
+  const sta=document.getElementById('f-sta').value;
+  filtered=VODS.filter(v=>
+    (!kw||v.name.toLowerCase().includes(kw)||v.id.includes(kw))&&
+    (!ins||v.instructor===ins)&&(!reg||v.region===reg)&&(!sta||v.status===sta)
+  );
+  curPage=1; renderTable();
+}
+
+function renderTable(){
+  const total=filtered.length, pages=Math.max(1,Math.ceil(total/RPER));
+  if(curPage>pages) curPage=pages;
+  const s=(curPage-1)*RPER, rows=filtered.slice(s,s+RPER);
+  document.getElementById('list-tbody').innerHTML=rows.length===0
+    ?`<tr><td colspan="7" style="text-align:center;padding:32px;color:#9CA3AF">No results found.</td></tr>`
+    :rows.map(v=>`
+      <tr>
+        <td class="mono">${v.id}</td>
+        <td><div class="cell-name"><div class="thumb">🧘</div><b>${v.name}</b></div></td>
+        <td class="sub">${v.region}</td>
+        <td class="sub">${v.instructor}</td>
+        <td><span class="badge badge-${v.status.toLowerCase()}">${v.status}</span></td>
+        <td class="muted">${v.updatedAt}</td>
+        <td><div class="row-actions">
+          <button class="btn-link" onclick='goForm(${JSON.stringify(v)})'>Edit</button>
+          <button class="btn-danger-link">Withdraw</button>
+        </div></td>
+      </tr>`).join('');
+  document.getElementById('pager-info').textContent=
+    total===0?'0 results':`${s+1}–${Math.min(s+RPER,total)} of ${total}`;
+  const pb=document.getElementById('page-btns');
+  pb.innerHTML=`<button class="pb" onclick="go(${Math.max(1,curPage-1)})">‹</button>`
+    +Array.from({length:pages},(_,i)=>i+1).map(p=>`<button class="pb${p===curPage?' active':''}" onclick="go(${p})">${p}</button>`).join('')
+    +`<button class="pb" onclick="go(${Math.min(pages,curPage+1)})">›</button>`;
+}
+function go(p){curPage=p;renderTable();}
+
+/* ══════════ MODALS ══════════ */
+function closeModals(){
+  document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('open'));
+  selMethod=''; selCopyId=null;
+  document.getElementById('btn-choose-ok').disabled=true;
+  document.getElementById('btn-copy-ok').disabled=true;
+  document.querySelectorAll('.radio-opt').forEach(o=>o.classList.remove('on'));
+  document.querySelectorAll('input[name=meth]').forEach(r=>r.checked=false);
+}
+function showModal(id){closeModals();document.getElementById('m-'+id).classList.add('open');}
+function openCreateModal(){selMethod='';showModal('choose');}
+
+function pickMethod(m){
+  selMethod=m;
+  document.getElementById('opt-new').classList.toggle('on',m==='new');
+  document.getElementById('opt-copy').classList.toggle('on',m==='copy');
+  document.getElementById('r-new').checked=m==='new';
+  document.getElementById('r-copy').checked=m==='copy';
+  document.getElementById('btn-choose-ok').disabled=false;
+}
+function goMethod(){
+  if(!selMethod) return;
+  if(selMethod==='new'){
+    document.getElementById('new-name').value='';
+    document.getElementById('btn-new-ok').disabled=true;
+    showModal('new');
+  } else {
+    selCopyId=null; copyPage=1;
+    document.getElementById('copy-q').value='';
+    renderCopy(); showModal('copy');
+  }
+}
+function confirmNew(){
+  const n=document.getElementById('new-name').value.trim();
+  if(!n) return;
+  closeModals();
+  goForm(null);
+  document.getElementById('fi-name').value=n;
+  document.getElementById('fs-vodname').value=n;
+  document.getElementById('form-title').textContent=n;
+}
+function renderCopy(){
+  const q=(document.getElementById('copy-q').value||'').toLowerCase();
+  const pool=COPIES.filter(c=>c.name.toLowerCase().includes(q)||c.id.includes(q));
+  const total=pool.length, pages=Math.max(1,Math.ceil(total/CPER));
+  if(copyPage>pages) copyPage=1;
+  const rows=pool.slice((copyPage-1)*CPER,copyPage*CPER);
+  document.getElementById('copy-tbody').innerHTML=rows.length===0
+    ?`<tr><td colspan="3" style="text-align:center;padding:16px;color:#9CA3AF">No classes found.</td></tr>`
+    :rows.map(c=>`
+      <tr class="${selCopyId===c.id?'sel':''}" onclick="pickCopy('${c.id}','${c.name}')">
+        <td><input type="radio" name="cc" ${selCopyId===c.id?'checked':''} style="accent-color:#1A6BFF;pointer-events:none"></td>
+        <td class="mono">${c.id}</td>
+        <td><div class="cell-name"><div class="thumb">🧘</div>${c.name}</div></td>
+      </tr>`).join('');
+  document.getElementById('copy-info').textContent=
+    total===0?'0':` ${(copyPage-1)*CPER+1}–${Math.min(copyPage*CPER,total)} of ${total}`;
+  const pb=document.getElementById('copy-btns');
+  pb.innerHTML=`<button class="pb" onclick="goC(${Math.max(1,copyPage-1)})">‹</button>`
+    +Array.from({length:pages},(_,i)=>i+1).map(p=>`<button class="pb${p===copyPage?' active':''}" onclick="goC(${p})">${p}</button>`).join('')
+    +`<button class="pb" onclick="goC(${Math.min(pages,copyPage+1)})">›</button>`;
+}
+function goC(p){copyPage=p;renderCopy();}
+function pickCopy(id,name){
+  selCopyId=id;
+  document.getElementById('btn-copy-ok').disabled=false;
+  renderCopy();
+}
+function confirmCopy(){
+  if(!selCopyId) return;
+  const found=COPIES.find(c=>c.id===selCopyId);
+  closeModals();
+  goForm(null);
+  if(found){
+    document.getElementById('fi-name').value='Copy of '+found.name;
+    document.getElementById('fs-vodname').value='Copy of '+found.name;
+    document.getElementById('form-title').textContent='Copy of '+found.name;
+  }
+}
+
+/* ══════════ FORM TABS ══════════ */
+function switchTab(i){
+  document.querySelectorAll('#form-tabs .tab').forEach((t,idx)=>t.classList.toggle('active',idx===i));
+  document.querySelectorAll('.tab-panel').forEach((p,idx)=>p.classList.toggle('active',idx===i));
+  document.getElementById('global-bottom').style.display=i===3?'none':'flex';
+}
+
+/* ══════════ WORKOUT TYPE ══════════ */
+function addWTRow(){
+  const n=wtRowCount++;
+  const tr=document.createElement('tr');
+  tr.innerHTML=`
+    <td><input class="inp-sm" placeholder="e.g. Yoga"></td>
+    <td><input class="inp-sm" placeholder="Sub-type"></td>
+    <td><div style="display:flex;gap:8px;">
+      <label style="font-size:12px;display:flex;align-items:center;gap:3px;"><input type="radio" name="wt${n}" value="yes" style="accent-color:#1A6BFF"> Yes</label>
+      <label style="font-size:12px;display:flex;align-items:center;gap:3px;"><input type="radio" name="wt${n}" value="no" style="accent-color:#1A6BFF"> No</label>
+    </div></td>
+    <td><input class="inp-sm" placeholder="Custom field"></td>
+    <td><button onclick="this.closest('tr').remove()" style="background:none;border:none;color:#9CA3AF;cursor:pointer;font-size:16px;line-height:1">×</button></td>`;
+  document.getElementById('wt-tbody').appendChild(tr);
+}
+
+/* ══════════ TAG CHIPS ══════════ */
+function rmChip(el){el.parentElement.remove();}
+function addChip(e){
+  if(e.key!=='Enter') return;
+  const inp=document.getElementById('tag-inp');
+  const val=inp.value.trim();
+  if(!val) return;
+  const chip=document.createElement('span');
+  chip.className='chip';
+  chip.innerHTML=`${val} <span class="rm" onclick="rmChip(this)">×</span>`;
+  document.getElementById('fi-tags').insertBefore(chip,inp);
+  inp.value='';
+}
+
+/* ══════════ LANGUAGE TABS ══════════ */
+function addLang(){
+  const langs=['繁體中文','日本語','한국어','Español'];
+  const ex=document.querySelectorAll('#lang-tabs span').length;
+  if(ex>=langs.length+1) return;
+  const span=document.createElement('span');
+  span.style.cssText='background:#F3F4F6;color:#6B7280;padding:3px 12px;border-radius:3px;font-size:12px;cursor:pointer;border:1px solid #E2E6EF;';
+  span.textContent=langs[ex-1]||'Lang '+(ex+1);
+  span.onclick=()=>{
+    document.querySelectorAll('#lang-tabs span').forEach(s=>{s.style.background='#F3F4F6';s.style.color='#6B7280';});
+    span.style.background='#1A6BFF'; span.style.color='#fff';
+  };
+  document.getElementById('lang-tabs').appendChild(span);
+}
+
+/* ══════════ SECTIONS ══════════ */
+function addSection(){
+  secRowCount++;
+  const tr=document.createElement('tr');
+  tr.innerHTML=`
+    <td>No.${secRowCount}</td>
+    <td><input class="inp" style="font-size:12px" placeholder="Section name"></td>
+    <td><input class="inp" style="font-size:12px" placeholder="00:00:00"></td>
+    <td><input class="inp" style="font-size:12px" placeholder="00:00:00"></td>
+    <td style="color:#6B7280">—</td>
+    <td><div style="display:flex;align-items:center;gap:10px;">
+      <div class="toggle" onclick="this.classList.toggle('on')"></div>
+      <button class="btn-link" style="font-size:12px">Edit</button>
+      <button class="btn-danger-link" style="font-size:12px" onclick="delSection(this)">Delete</button>
+    </div></td>`;
+  document.getElementById('sec-tbody').appendChild(tr);
+}
+function delSection(btn){
+  btn.closest('tr').remove();
+  document.querySelectorAll('#sec-tbody tr').forEach((tr,i)=>{tr.cells[0].textContent=`No.${i+1}`;});
+  secRowCount=document.querySelectorAll('#sec-tbody tr').length;
+}
+
+/* ══════════ UPLOAD ══════════ */
+function doUpload(key){
+  const prev=document.getElementById('up-'+key);
+  if(!prev) return;
+  const emoji=key==='vid'?'🎬':'🖼️';
+  prev.innerHTML=`<div style="font-size:44px;color:rgba(26,29,46,.25)">${emoji}</div>`;
+  prev.style.background='#2D3748';
+  ['uc-'+key,'ue-'+key].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.classList.remove('err-card');if(id.startsWith('ue')) el.style.display='none';}
+  });
+}
+function resetUpload(key){
+  const prev=document.getElementById('up-'+key);
+  const ph=document.getElementById('uph-'+key);
+  if(!prev||!ph) return;
+  prev.innerHTML=''; prev.appendChild(ph); ph.style.display='';
+  prev.style.background='#EEF4FF';
+}
+
+/* ══════════ ERRORS ══════════ */
+function clearErrors(){
+  document.querySelectorAll('.err-msg').forEach(el=>el.style.display='none');
+  document.querySelectorAll('.inp.err,.tag-wrap.err,.inp-sm.err').forEach(el=>el.classList.remove('err'));
+  document.querySelectorAll('.upload-err').forEach(el=>el.style.display='none');
+  document.querySelectorAll('.upload-card.err-card').forEach(el=>el.classList.remove('err-card'));
+}
+
+/* ══════════ TOAST ══════════ */
+function showToast(msg,color){
+  const t=document.createElement('div');
+  t.className='toast'; t.textContent=msg;
+  t.style.background=color||'#1A1D2E';
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2500);
+}
+
+/* ══════════ INIT ══════════ */
+renderTable();
+document.getElementById('global-bottom').style.display='flex';
+</script>
+</body>
+</html>
