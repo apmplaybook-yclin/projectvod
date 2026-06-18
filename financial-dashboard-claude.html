@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Portfolio Dashboard — Demo</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* NIO Mode 1 — Light Corporate */
+  --white:       #FFFFFF;
+  --cloud-grey:  #F0F0F2;
+  --cool-grey:   #DCDCDE;
+  --silver-grey: #8D8D8F;
+  --dark-grey:   #585B5A;
+  --black:       #000F16;
+  --soft-blue:   #E6FAFA;
+  --tonal-blue:  #B7E8EA;
+  --twilight:    #00263C;
+  --tonal-teal:  #004B64;
+  --teal:        #00BEBE;
+  --red:         #FF231E;
+
+  /* Semantic — Light Corporate */
+  --bg:          var(--white);
+  --bg-card:     var(--white);
+  --bg-alt:      var(--cloud-grey);
+  --bg-wash:     var(--soft-blue);
+  --bg-thead:    var(--cloud-grey);
+  --border:      var(--cool-grey);
+  --text:        var(--black);
+  --text2:       var(--dark-grey);
+  --text3:       var(--silver-grey);
+  --text4:       #9a9a9c;
+  --accent:      var(--teal);
+  --gain:        var(--teal);
+  --loss:        var(--red);
+  --mono:        'JetBrains Mono', monospace;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-weight: 300;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Header ── */
+.header {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+}
+.header-teal-stripe { height: 3px; background: var(--teal); }
+.header-inner {
+  max-width: 1100px; margin: 0 auto;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 12px;
+  padding: 22px 32px 20px;
+}
+.header-left {}
+.header-eyebrow { font-size: 10px; letter-spacing: 3px; color: var(--text3); text-transform: uppercase; margin-bottom: 6px; font-weight: 400; }
+.header-title   { font-size: 20px; font-weight: 400; color: var(--black); letter-spacing: -0.3px; }
+.header-sub     { font-size: 12px; color: var(--text3); margin-top: 4px; font-weight: 300; }
+.header-right   { text-align: right; }
+.header-total   { font-size: 26px; font-weight: 400; color: var(--teal); font-family: var(--mono); letter-spacing: -0.5px; }
+.header-ret     { font-size: 11px; color: var(--text3); margin-top: 4px; font-family: var(--mono); }
+
+/* ── Main ── */
+.main { max-width: 1100px; margin: 0 auto; padding: 24px 32px 56px; }
+
+/* ── Tabs ── */
+.tabs { display: flex; gap: 0; margin-bottom: 28px; border-bottom: 1px solid var(--border); }
+.tab-btn {
+  background: transparent; border: none; border-bottom: 2px solid transparent;
+  color: var(--text3); padding: 10px 18px 9px; margin-bottom: -1px;
+  font-size: 12px; font-weight: 400; cursor: pointer; transition: all 0.15s;
+  font-family: inherit; letter-spacing: 0.3px;
+}
+.tab-btn:hover { color: var(--black); }
+.tab-btn.active { color: var(--teal); border-bottom-color: var(--teal); font-weight: 500; }
+
+/* ── Panels ── */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ── Section accent ── */
+.section-teal { width: 24px; height: 2px; background: var(--teal); margin-bottom: 16px; }
+
+/* ── KPI Grid ── */
+.kpi-grid   { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); margin-bottom: 20px; }
+.kpi-grid-4 { grid-template-columns: repeat(4,1fr); }
+.kpi { background: var(--white); padding: 20px 22px; }
+.kpi-label { font-size: 10px; letter-spacing: 2px; color: var(--text3); text-transform: uppercase; margin-bottom: 10px; font-weight: 400; }
+.kpi-value { font-size: 18px; font-weight: 400; font-family: var(--mono); line-height: 1.1; color: var(--black); }
+.kpi-sub   { font-size: 11px; color: var(--text3); margin-top: 6px; font-weight: 300; }
+
+/* ── Overview ── */
+.overview-grid { display: grid; grid-template-columns: 200px 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+
+/* ── Ring card ── */
+.ring-card {
+  background: var(--bg-wash);
+  padding: 22px 18px;
+  display: flex; flex-direction: column; align-items: center; gap: 16px;
+}
+.ring-card-label { font-size: 10px; letter-spacing: 2px; color: var(--text3); text-transform: uppercase; font-weight: 400; align-self: flex-start; }
+.ring-wrap { position: relative; width: 140px; height: 140px; }
+.ring-center {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  text-align: center; pointer-events: none;
+}
+.ring-center-label { font-size: 9px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; }
+.ring-center-value { font-size: 13px; font-weight: 400; color: var(--teal); font-family: var(--mono); margin-top: 2px; }
+.ring-legend { width: 100%; }
+.ring-legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.ring-dash { width: 16px; height: 2px; flex-shrink: 0; }
+.ring-name { color: var(--text2); flex: 1; font-size: 11px; font-weight: 300; }
+.ring-pct  { font-family: var(--mono); font-size: 11px; font-weight: 400; }
+
+/* ── Account grid ── */
+.account-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); }
+.account-card { background: var(--white); padding: 20px 22px; }
+.account-type  { font-size: 9px; letter-spacing: 2px; color: var(--text3); text-transform: uppercase; margin-bottom: 6px; font-weight: 400; }
+.account-name  { font-size: 12px; color: var(--text2); margin-bottom: 14px; font-weight: 300; }
+.account-value { font-size: 17px; font-weight: 400; font-family: var(--mono); color: var(--black); }
+.account-gain  { font-size: 11px; font-family: var(--mono); margin-top: 5px; color: var(--teal); }
+.bar-track { margin-top: 14px; height: 1px; background: var(--border); position: relative; }
+.bar-fill  { height: 1px; position: absolute; top: 0; left: 0; background: var(--teal); }
+.bar-tick  { position: absolute; top: -4px; width: 1px; height: 9px; background: var(--teal); }
+.account-bar-label { font-size: 10px; color: var(--text3); margin-top: 8px; font-family: var(--mono); }
+
+/* ── Card ── */
+.card { background: var(--white); border: 1px solid var(--border); margin-bottom: 16px; }
+.card-header {
+  padding: 14px 20px; border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center;
+  background: var(--cloud-grey);
+}
+.card-title { font-size: 14px; font-weight: 400; color: var(--black); }
+.card-sub   { font-size: 11px; color: var(--text3); font-weight: 300; }
+
+/* ── Table ── */
+.table-scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+thead tr { background: var(--cloud-grey); }
+th {
+  padding: 10px 16px; color: var(--text3); font-size: 10px;
+  letter-spacing: 1.5px; text-transform: uppercase; font-weight: 400;
+  white-space: nowrap; cursor: pointer; user-select: none; text-align: right;
+  border-bottom: 1px solid var(--border);
+}
+th.left, td.left { text-align: left; }
+td { padding: 11px 16px; border-bottom: 1px solid var(--border); text-align: right; font-weight: 300; color: var(--black); }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:nth-child(even) { background: #fafafa; }
+tbody tr:hover { background: var(--soft-blue); }
+tfoot tr { background: var(--cloud-grey); }
+tfoot td { font-weight: 400; border-top: 1px solid var(--teal); }
+
+.symbol-cell { display: flex; align-items: center; gap: 12px; }
+.symbol-icon {
+  width: 34px; height: 34px;
+  background: var(--soft-blue);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 8px; font-weight: 400; color: var(--teal); flex-shrink: 0;
+  font-family: var(--mono); letter-spacing: 0;
+}
+.symbol-name { font-weight: 400; color: var(--black); font-size: 12px; }
+.symbol-note { font-size: 10px; color: var(--text3); margin-top: 2px; font-weight: 300; }
+
+.bar-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.mini-track { width: 64px; height: 1px; background: var(--border); position: relative; }
+.mini-fill  { height: 1px; position: absolute; top: 0; left: 0; background: var(--teal); }
+
+.mono  { font-family: var(--mono); }
+.teal  { color: var(--teal); }
+.gain  { color: var(--teal); }
+.loss  { color: var(--red); }
+.dim   { color: var(--text3); }
+.muted { color: var(--text2); }
+.bold  { font-weight: 500; }
+
+/* ── Chart ── */
+.chart-wrap { padding: 22px 20px 16px; }
+.chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.chart-toggles { display: flex; gap: 2px; }
+.chart-toggle {
+  background: var(--white); border: 1px solid var(--border);
+  color: var(--text3); padding: 5px 12px;
+  font-size: 10px; font-weight: 400; cursor: pointer; transition: all 0.15s;
+  font-family: inherit; letter-spacing: 0.5px;
+}
+.chart-toggle:hover { border-color: var(--teal); color: var(--teal); }
+.chart-toggle.active { background: var(--teal); border-color: var(--teal); color: var(--white); }
+canvas { max-height: 260px; }
+
+/* ── Mini stats ── */
+.mini-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); margin-top: 16px; }
+.mini-stat { background: var(--soft-blue); padding: 16px 18px; }
+.mini-stat-label { font-size: 10px; color: var(--text3); margin-bottom: 6px; letter-spacing: 1px; text-transform: uppercase; font-weight: 400; }
+.mini-stat-value { font-size: 14px; font-weight: 400; font-family: var(--mono); color: var(--black); }
+
+/* ── History highlight ── */
+tr.highlight td { background: var(--soft-blue) !important; }
+tr.highlight td:first-child { color: var(--teal); font-weight: 500; }
+
+/* ── Note ── */
+.note { font-size: 10px; color: var(--text3); margin-top: 12px; font-weight: 300; }
+
+@media (max-width: 700px) {
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .kpi-grid-4 { grid-template-columns: 1fr 1fr; }
+  .overview-grid { grid-template-columns: 1fr; }
+  .account-grid  { grid-template-columns: 1fr; }
+  .mini-stats    { grid-template-columns: 1fr 1fr; }
+  .main    { padding: 16px; }
+  .header-inner { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-teal-stripe"></div>
+  <div class="header-inner">
+    <div class="header-left">
+      <div class="header-eyebrow">Investment Portfolio · Demo</div>
+      <div class="header-title">Alex Chen</div>
+      <div class="header-sub">Last updated Jun 15, 2026</div>
+    </div>
+    <div class="header-right">
+      <div class="header-total">NT$12,840,500</div>
+      <div class="header-ret">+8.24% since Jan 2024 &nbsp;·&nbsp; Peak NT$13.12M on May 20</div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab(this,'overview')">Overview</button>
+    <button class="tab-btn" onclick="switchTab(this,'holdings')">Holdings</button>
+    <button class="tab-btn" onclick="switchTab(this,'trend')">Trend</button>
+    <button class="tab-btn" onclick="switchTab(this,'history')">History</button>
+    <button class="tab-btn" onclick="switchTab(this,'fx')">Exchange Rates</button>
+  </div>
+
+  <!-- ══ OVERVIEW ══ -->
+  <div id="panel-overview" class="panel active">
+    <div class="section-teal"></div>
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="kpi-label">Total Portfolio</div>
+        <div class="kpi-value teal">NT$12,840,500</div>
+        <div class="kpi-sub">NTD equivalent · Jun 15, 2026</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Stock 收益 Unrealized</div>
+        <div class="kpi-value gain">+NT$687,320</div>
+        <div class="kpi-sub">Cost NT$2,153,520 · Return +29.72%</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Total Return vs Baseline</div>
+        <div class="kpi-value gain">+8.24%</div>
+        <div class="kpi-sub">+NT$977,500 since Jan 2024</div>
+      </div>
+    </div>
+
+    <div class="overview-grid">
+      <!-- Ring -->
+      <div class="ring-card">
+        <div class="ring-card-label">Allocation</div>
+        <div class="ring-wrap">
+          <canvas id="ring-chart" width="140" height="140"></canvas>
+          <div class="ring-center">
+            <div class="ring-center-label">Total</div>
+            <div class="ring-center-value">12.84M</div>
+          </div>
+        </div>
+        <div class="ring-legend">
+          <div class="ring-legend-item">
+            <div class="ring-dash" style="background:#00BEBE"></div>
+            <span class="ring-name">Cash NTD</span>
+            <span class="ring-pct teal">36.2%</span>
+          </div>
+          <div class="ring-legend-item">
+            <div class="ring-dash" style="background:#B7E8EA"></div>
+            <span class="ring-name">Cash FX</span>
+            <span class="ring-pct" style="color:#004B64">20.5%</span>
+          </div>
+          <div class="ring-legend-item">
+            <div class="ring-dash" style="background:#00263C"></div>
+            <span class="ring-name">Stocks</span>
+            <span class="ring-pct" style="color:#00263C">22.1%</span>
+          </div>
+          <div class="ring-legend-item">
+            <div class="ring-dash" style="background:#8D8D8F"></div>
+            <span class="ring-name">Insurance</span>
+            <span class="ring-pct" style="color:#8D8D8F">21.2%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Account Cards -->
+      <div class="account-grid">
+        <div class="account-card">
+          <div class="account-type">Cash · NTD</div>
+          <div class="account-name">Fubon NTD Savings</div>
+          <div class="account-value teal">NT$4,648,260</div>
+          <div class="bar-track"><div class="bar-fill" style="width:36.2%"></div><div class="bar-tick" style="left:36.2%"></div></div>
+          <div class="account-bar-label">36.2%</div>
+        </div>
+        <div class="account-card">
+          <div class="account-type">Cash · Foreign Currency</div>
+          <div class="account-name">Fubon Non-NTD</div>
+          <div class="account-value" style="color:#004B64">NT$2,632,400</div>
+          <div class="bar-track"><div class="bar-fill" style="width:20.5%;background:#B7E8EA"></div><div class="bar-tick" style="left:20.5%;background:#B7E8EA"></div></div>
+          <div class="account-bar-label">20.5%</div>
+        </div>
+        <div class="account-card">
+          <div class="account-type">Stocks / ETFs</div>
+          <div class="account-name">Equities — 市值</div>
+          <div class="account-value" style="color:#00263C">NT$2,840,840</div>
+          <div class="account-gain">+NT$687,320 &nbsp;(+29.72%)</div>
+          <div class="bar-track"><div class="bar-fill" style="width:22.1%;background:#00263C"></div><div class="bar-tick" style="left:22.1%;background:#00263C"></div></div>
+          <div class="account-bar-label">22.1%</div>
+        </div>
+        <div class="account-card">
+          <div class="account-type">Insurance · Fixed</div>
+          <div class="account-name">Life Insurance</div>
+          <div class="account-value" style="color:#8D8D8F">NT$2,719,000</div>
+          <div class="bar-track"><div class="bar-fill" style="width:21.2%;background:#8D8D8F"></div><div class="bar-tick" style="left:21.2%;background:#8D8D8F"></div></div>
+          <div class="account-bar-label">21.2%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ HOLDINGS ══ -->
+  <div id="panel-holdings" class="panel">
+    <div class="section-teal"></div>
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="kpi-label">Stock 市值</div>
+        <div class="kpi-value" style="color:#00263C">NT$2,840,840</div>
+        <div class="kpi-sub">Current market value</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Stock 收益</div>
+        <div class="kpi-value gain">+NT$687,320</div>
+        <div class="kpi-sub">Cost basis NT$2,153,520</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Return on Cost</div>
+        <div class="kpi-value gain">+29.72%</div>
+        <div class="kpi-sub">Unrealized</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Purchase Ledger</span>
+        <span class="card-sub">Total cost basis NT$2,153,552</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th class="left">Symbol</th>
+            <th class="left">Name</th>
+            <th>Shares</th>
+            <th>Avg Cost</th>
+            <th>Cost Basis</th>
+            <th>Weight</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="left"><div class="symbol-cell"><div class="symbol-icon">00919</div><div><div class="symbol-name">00919</div><div class="symbol-note">High-yield ETF</div></div></div></td>
+            <td class="left muted">群益台灣精選高息</td>
+            <td class="mono">25,000</td><td class="mono muted">26.80</td>
+            <td class="mono teal bold">NT$670,000</td>
+            <td><div class="bar-wrap"><span class="mono dim" style="font-size:11px">31.1%</span><div class="mini-track"><div class="mini-fill" style="width:31.1%"></div></div></div></td>
+          </tr>
+          <tr>
+            <td class="left"><div class="symbol-cell"><div class="symbol-icon">0050</div><div><div class="symbol-name">0050</div><div class="symbol-note">Taiwan Top 50</div></div></div></td>
+            <td class="left muted">元大台灣50</td>
+            <td class="mono">10,000</td><td class="mono muted">78.40</td>
+            <td class="mono teal bold">NT$784,000</td>
+            <td><div class="bar-wrap"><span class="mono dim" style="font-size:11px">36.4%</span><div class="mini-track"><div class="mini-fill" style="width:36.4%"></div></div></div></td>
+          </tr>
+          <tr>
+            <td class="left"><div class="symbol-cell"><div class="symbol-icon">0056</div><div><div class="symbol-name">0056</div><div class="symbol-note">High-Dividend ETF</div></div></div></td>
+            <td class="left muted">元大高股息</td>
+            <td class="mono">12,000</td><td class="mono muted">44.10</td>
+            <td class="mono teal bold">NT$529,200</td>
+            <td><div class="bar-wrap"><span class="mono dim" style="font-size:11px">24.6%</span><div class="mini-track"><div class="mini-fill" style="width:24.6%"></div></div></div></td>
+          </tr>
+          <tr>
+            <td class="left"><div class="symbol-cell"><div class="symbol-icon">2330</div><div><div class="symbol-name">2330</div><div class="symbol-note">Semiconductor</div></div></div></td>
+            <td class="left muted">台積電 TSMC</td>
+            <td class="mono">36</td><td class="mono muted">4,732.00</td>
+            <td class="mono teal bold">NT$170,352</td>
+            <td><div class="bar-wrap"><span class="mono dim" style="font-size:11px">7.9%</span><div class="mini-track"><div class="mini-fill" style="width:7.9%"></div></div></div></td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="4" class="left dim" style="font-weight:300;font-size:11px">4 positions</td>
+            <td class="mono teal bold">NT$2,153,552</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ TREND ══ -->
+  <div id="panel-trend" class="panel">
+    <div class="section-teal"></div>
+    <div class="card">
+      <div class="chart-wrap">
+        <div class="chart-header">
+          <span class="card-title">Portfolio Value History</span>
+          <div class="chart-toggles">
+            <button class="chart-toggle active" onclick="setTrendSeries(this,'all')">All</button>
+            <button class="chart-toggle" onclick="setTrendSeries(this,'total')">Total</button>
+            <button class="chart-toggle" onclick="setTrendSeries(this,'stock')">Stock</button>
+            <button class="chart-toggle" onclick="setTrendSeries(this,'cash')">Cash</button>
+          </div>
+        </div>
+        <canvas id="trend-chart"></canvas>
+      </div>
+    </div>
+    <div class="mini-stats">
+      <div class="mini-stat">
+        <div class="mini-stat-label">Baseline · Jan 2024</div>
+        <div class="mini-stat-value muted">NT$11.86M</div>
+      </div>
+      <div class="mini-stat">
+        <div class="mini-stat-label">Current · Jun 2026</div>
+        <div class="mini-stat-value teal">NT$12.84M</div>
+      </div>
+      <div class="mini-stat">
+        <div class="mini-stat-label">All-time High</div>
+        <div class="mini-stat-value gain">NT$13.12M</div>
+      </div>
+      <div class="mini-stat">
+        <div class="mini-stat-label">Total Return</div>
+        <div class="mini-stat-value gain">+8.24%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ HISTORY ══ -->
+  <div id="panel-history" class="panel">
+    <div class="section-teal"></div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">All Snapshots</span>
+        <span class="card-sub">28 records · most recent first</span>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th class="left">Date</th>
+              <th>富邦 NTD</th>
+              <th>富邦 Non-NTD</th>
+              <th>Stock 市值</th>
+              <th>Stock 收益</th>
+              <th>保險</th>
+              <th>Total</th>
+              <th>Cash %</th>
+            </tr>
+          </thead>
+          <tbody id="history-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="note">* Stock 收益 tracking began May 2026. Earlier snapshots show market value only.</div>
+  </div>
+
+  <!-- ══ FX ══ -->
+  <div id="panel-fx" class="panel">
+    <div class="section-teal"></div>
+    <div class="kpi-grid kpi-grid-4">
+      <div class="kpi">
+        <div class="kpi-label">USD / NTD · Latest</div>
+        <div class="kpi-value teal">31.6690</div>
+        <div class="kpi-sub">Jun 10, 2026</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">USD / NTD · Baseline</div>
+        <div class="kpi-value">30.1240</div>
+        <div class="kpi-sub">Jan 2024</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">RMB / NTD · Latest</div>
+        <div class="kpi-value" style="color:#004B64">4.6490</div>
+        <div class="kpi-sub">Jun 10, 2026</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">RMB / NTD · Baseline</div>
+        <div class="kpi-value">4.1820</div>
+        <div class="kpi-sub">Jan 2024</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="chart-wrap">
+        <div class="chart-header">
+          <span class="card-title">Exchange Rate History</span>
+          <div class="chart-toggles">
+            <button class="chart-toggle active" onclick="setFxSeries(this,'both')">Both</button>
+            <button class="chart-toggle" onclick="setFxSeries(this,'usd')">USD/NTD</button>
+            <button class="chart-toggle" onclick="setFxSeries(this,'rmb')">RMB/NTD</button>
+          </div>
+        </div>
+        <canvas id="fx-chart"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Rate History</span>
+        <span class="card-sub">22 records</span>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th class="left">Date</th>
+              <th>USD / NTD</th><th>Δ USD</th>
+              <th>RMB / NTD</th><th>Δ RMB</th>
+            </tr>
+          </thead>
+          <tbody id="fx-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const HISTORY_DATA = [
+  { date:"01/15/2024", fNTD:4120000, fFX:3380000, stock:480000,  gain:null,   ins:2719000, total:10699000, cashPct:70.1 },
+  { date:"02/10/2024", fNTD:4180000, fFX:3240000, stock:492000,  gain:null,   ins:2719000, total:10631000, cashPct:69.9 },
+  { date:"03/08/2024", fNTD:4350000, fFX:3110000, stock:510000,  gain:null,   ins:2719000, total:10689000, cashPct:70.0 },
+  { date:"04/12/2024", fNTD:4480000, fFX:2980000, stock:524000,  gain:null,   ins:2719000, total:10703000, cashPct:69.7 },
+  { date:"05/06/2024", fNTD:4550000, fFX:2870000, stock:538000,  gain:null,   ins:2719000, total:10677000, cashPct:69.6 },
+  { date:"06/03/2024", fNTD:4620000, fFX:2760000, stock:549000,  gain:null,   ins:2719000, total:10648000, cashPct:69.4 },
+  { date:"07/08/2024", fNTD:4690000, fFX:2680000, stock:565000,  gain:null,   ins:2719000, total:10654000, cashPct:69.3 },
+  { date:"08/05/2024", fNTD:4720000, fFX:2610000, stock:572000,  gain:null,   ins:2719000, total:10621000, cashPct:69.1 },
+  { date:"09/09/2024", fNTD:4780000, fFX:2590000, stock:581000,  gain:null,   ins:2719000, total:10670000, cashPct:69.1 },
+  { date:"10/07/2024", fNTD:4820000, fFX:2550000, stock:596000,  gain:null,   ins:2719000, total:10685000, cashPct:68.9 },
+  { date:"11/04/2024", fNTD:4870000, fFX:2510000, stock:614000,  gain:null,   ins:2719000, total:10713000, cashPct:68.8 },
+  { date:"12/02/2024", fNTD:4920000, fFX:2488000, stock:632000,  gain:null,   ins:2719000, total:10759000, cashPct:68.7 },
+  { date:"01/06/2025", fNTD:4960000, fFX:2460000, stock:654000,  gain:null,   ins:2719000, total:10793000, cashPct:68.4 },
+  { date:"02/03/2025", fNTD:4990000, fFX:2440000, stock:672000,  gain:null,   ins:2719000, total:10821000, cashPct:68.2 },
+  { date:"03/10/2025", fNTD:5010000, fFX:2420000, stock:695000,  gain:null,   ins:2719000, total:10844000, cashPct:68.0 },
+  { date:"04/07/2025", fNTD:5030000, fFX:2390000, stock:718000,  gain:null,   ins:2719000, total:10857000, cashPct:67.8 },
+  { date:"05/05/2025", fNTD:5040000, fFX:2360000, stock:745000,  gain:null,   ins:2719000, total:10864000, cashPct:67.6 },
+  { date:"06/02/2025", fNTD:5010000, fFX:2340000, stock:770000,  gain:null,   ins:2719000, total:10839000, cashPct:67.5 },
+  { date:"08/04/2025", fNTD:4980000, fFX:2380000, stock:1120000, gain:186000, ins:2719000, total:11199000, cashPct:66.6 },
+  { date:"10/06/2025", fNTD:4870000, fFX:2420000, stock:1380000, gain:312000, ins:2719000, total:11389000, cashPct:64.9 },
+  { date:"12/01/2025", fNTD:4760000, fFX:2480000, stock:1620000, gain:420000, ins:2719000, total:11579000, cashPct:62.6 },
+  { date:"02/02/2026", fNTD:4700000, fFX:2540000, stock:1940000, gain:498000, ins:2719000, total:11899000, cashPct:60.8 },
+  { date:"04/06/2026", fNTD:4660000, fFX:2580000, stock:2280000, gain:582000, ins:2719000, total:12239000, cashPct:59.1 },
+  { date:"05/05/2026", fNTD:4648000, fFX:2610000, stock:2600000, gain:638000, ins:2719000, total:12577000, cashPct:57.7 },
+  { date:"05/20/2026", fNTD:4648000, fFX:2640000, stock:2960000, gain:720000, ins:2719000, total:12967000, cashPct:56.1 },
+  { date:"06/01/2026", fNTD:4648000, fFX:2635000, stock:2890000, gain:704000, ins:2719000, total:12892000, cashPct:56.5 },
+  { date:"06/08/2026", fNTD:4648000, fFX:2634000, stock:2858000, gain:696000, ins:2719000, total:12859000, cashPct:56.7 },
+  { date:"06/15/2026", fNTD:4648260, fFX:2632400, stock:2840840, gain:687320, ins:2719000, total:12840500, cashPct:56.7 },
+];
+
+const FX_DATA = [
+  { date:"Jan 2024",usd:30.124,rmb:4.182 },{ date:"Mar 2024",usd:30.845,rmb:4.271 },
+  { date:"May 2024",usd:31.520,rmb:4.358 },{ date:"Jul 2024",usd:32.210,rmb:4.433 },
+  { date:"Sep 2024",usd:31.940,rmb:4.401 },{ date:"Nov 2024",usd:32.561,rmb:4.469 },
+  { date:"Jan 2025",usd:32.872,rmb:4.524 },{ date:"Mar 2025",usd:32.784,rmb:4.513 },
+  { date:"Apr 2025",usd:33.191,rmb:4.514 },{ date:"May 2025",usd:30.048,rmb:4.154 },
+  { date:"Jun 2025",usd:29.878,rmb:4.141 },{ date:"Jul 2025",usd:29.301,rmb:4.069 },
+  { date:"Aug 2025",usd:30.623,rmb:4.300 },{ date:"Oct 2025",usd:30.621,rmb:4.288 },
+  { date:"Dec 2025",usd:31.400,rmb:4.418 },{ date:"Jan 2026",usd:31.415,rmb:4.492 },
+  { date:"Mar 2026",usd:31.649,rmb:4.571 },{ date:"Apr 2026",usd:31.972,rmb:4.622 },
+  { date:"May 2026",usd:31.595,rmb:4.600 },{ date:"May 26", usd:31.441,rmb:4.609 },
+  { date:"Jun 4",   usd:31.406,rmb:4.615 },{ date:"Jun 10", usd:31.669,rmb:4.649 },
+];
+
+const NIO = { teal:'#00BEBE', black:'#000F16', twilight:'#00263C', tonalTeal:'#004B64',
+  softBlue:'#E6FAFA', tonalBlue:'#B7E8EA', silver:'#8D8D8F', cool:'#DCDCDE',
+  dark:'#585B5A', red:'#FF231E', white:'#FFFFFF', cloud:'#F0F0F2' };
+
+function switchTab(btn, name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name==='trend' && !trendChart) buildTrendChart();
+  if (name==='fx'    && !fxChart)    buildFxChart();
+}
+
+Chart.defaults.color = NIO.dark;
+Chart.defaults.font.family = 'Inter';
+Chart.defaults.font.size = 11;
+
+window.addEventListener('load', () => {
+  new Chart(document.getElementById('ring-chart').getContext('2d'), {
+    type:'doughnut',
+    data:{ datasets:[{ data:[36.2,20.5,22.1,21.2],
+      backgroundColor:[NIO.teal, NIO.tonalBlue, NIO.twilight, NIO.silver],
+      borderWidth:0, hoverOffset:0 }] },
+    options:{ cutout:'74%', responsive:false,
+      plugins:{ legend:{ display:false }, tooltip:{ enabled:false } }, animation:{ duration:600 } }
+  });
+  buildHistoryTable();
+  buildFxTable();
+});
+
+const makeTooltip = (fmt) => ({
+  backgroundColor: NIO.black, borderColor: NIO.cool, borderWidth:1,
+  titleColor: NIO.silver, bodyColor: NIO.white, padding:10,
+  callbacks:{ label: ctx => ` ${ctx.dataset.label}: ${fmt(ctx.raw)}` }
+});
+
+let trendChart = null;
+function buildTrendChart() {
+  trendChart = new Chart(document.getElementById('trend-chart').getContext('2d'), {
+    type:'line',
+    data:{
+      labels: HISTORY_DATA.map(r=>r.date.slice(0,5)),
+      datasets:[
+        { label:'Total',      data:HISTORY_DATA.map(r=>r.total),      borderColor:NIO.teal,     borderWidth:2,   pointRadius:0, tension:0.3, yAxisID:'y' },
+        { label:'Stock 市值', data:HISTORY_DATA.map(r=>r.stock),      borderColor:NIO.twilight, borderWidth:1.5, pointRadius:0, tension:0.3, yAxisID:'y' },
+        { label:'Cash',       data:HISTORY_DATA.map(r=>r.fNTD+r.fFX), borderColor:NIO.silver,   borderWidth:1,   pointRadius:0, tension:0.3, yAxisID:'y' },
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:true,
+      interaction:{ mode:'index', intersect:false },
+      plugins:{ legend:{ display:true, labels:{ color:NIO.dark, font:{size:11}, boxWidth:16, padding:20 } }, tooltip: makeTooltip(v=>`NT$${Math.round(v).toLocaleString()}`) },
+      scales:{
+        x:{ ticks:{ color:NIO.dark, font:{size:10}, maxTicksLimit:8 }, grid:{ color:NIO.cool } },
+        y:{ ticks:{ color:NIO.dark, font:{size:10}, callback:v=>`${(v/1e6).toFixed(1)}M` }, grid:{ color:NIO.cool } }
+      }
+    }
+  });
+}
+
+function setTrendSeries(btn, mode) {
+  document.querySelectorAll('#panel-trend .chart-toggle').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if (!trendChart) return;
+  trendChart.data.datasets.forEach((ds,i)=>{ ds.hidden = mode==='all'?false:(i===0&&mode!=='total')||(i===1&&mode!=='stock')||(i===2&&mode!=='cash'); });
+  trendChart.update();
+}
+
+let fxChart = null;
+function buildFxChart() {
+  fxChart = new Chart(document.getElementById('fx-chart').getContext('2d'), {
+    type:'line',
+    data:{
+      labels: FX_DATA.map(r=>r.date),
+      datasets:[
+        { label:'USD/NTD', data:FX_DATA.map(r=>r.usd), borderColor:NIO.teal,    borderWidth:2,   pointRadius:0, tension:0.3, yAxisID:'usd' },
+        { label:'RMB/NTD', data:FX_DATA.map(r=>r.rmb), borderColor:NIO.twilight,borderWidth:1.5, pointRadius:0, tension:0.3, yAxisID:'rmb' },
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:true,
+      interaction:{ mode:'index', intersect:false },
+      plugins:{ legend:{ display:true, labels:{ color:NIO.dark, font:{size:11}, boxWidth:16, padding:20 } }, tooltip: makeTooltip(v=>v.toFixed(4)) },
+      scales:{
+        x:   { ticks:{ color:NIO.dark, font:{size:10}, maxTicksLimit:8 }, grid:{ color:NIO.cool } },
+        usd: { position:'left',  ticks:{ color:NIO.dark, font:{size:10}, callback:v=>v.toFixed(1) }, grid:{ color:NIO.cool } },
+        rmb: { position:'right', ticks:{ color:NIO.dark, font:{size:10}, callback:v=>v.toFixed(2) }, grid:{ drawOnChartArea:false } },
+      }
+    }
+  });
+}
+
+function setFxSeries(btn, mode) {
+  document.querySelectorAll('#panel-fx .chart-toggle').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if (!fxChart) return;
+  fxChart.data.datasets[0].hidden = mode==='rmb';
+  fxChart.data.datasets[1].hidden = mode==='usd';
+  fxChart.update();
+}
+
+function buildHistoryTable() {
+  document.getElementById('history-tbody').innerHTML = [...HISTORY_DATA].reverse().map((r,i) => {
+    const isLatest = i===0;
+    const gainHtml = r.gain!=null ? `<span class="mono gain">+${r.gain.toLocaleString()}</span>` : `<span class="dim">—</span>`;
+    return `<tr${isLatest?' class="highlight"':''}>
+      <td class="left mono">${r.date}${isLatest?' ·':''}</td>
+      <td class="mono">${r.fNTD.toLocaleString()}</td>
+      <td class="mono">${r.fFX.toLocaleString()}</td>
+      <td class="mono" style="color:#00263C">${r.stock.toLocaleString()}</td>
+      <td>${gainHtml}</td>
+      <td class="mono" style="color:#8D8D8F">${r.ins.toLocaleString()}</td>
+      <td class="mono teal bold">${r.total.toLocaleString()}</td>
+      <td class="mono dim">${r.cashPct}%</td>
+    </tr>`;
+  }).join('');
+}
+
+function buildFxTable() {
+  const rows = [...FX_DATA].reverse();
+  document.getElementById('fx-tbody').innerHTML = rows.map((r,i) => {
+    const prev = rows[i+1];
+    const dU = prev ? r.usd-prev.usd : null;
+    const dR = prev ? r.rmb-prev.rmb : null;
+    const dUH = dU==null?'<span class="dim">—</span>':`<span class="mono ${dU>=0?'gain':'loss'}">${dU>=0?'+':''}${dU.toFixed(4)}</span>`;
+    const dRH = dR==null?'<span class="dim">—</span>':`<span class="mono ${dR>=0?'gain':'loss'}">${dR>=0?'+':''}${dR.toFixed(4)}</span>`;
+    return `<tr${i===0?' class="highlight"':''}>
+      <td class="left mono">${r.date}${i===0?' ·':''}</td>
+      <td class="mono teal bold">${r.usd.toFixed(4)}</td><td>${dUH}</td>
+      <td class="mono bold" style="color:#004B64">${r.rmb.toFixed(4)}</td><td>${dRH}</td>
+    </tr>`;
+  }).join('');
+}
+</script>
+</body>
+</html>
